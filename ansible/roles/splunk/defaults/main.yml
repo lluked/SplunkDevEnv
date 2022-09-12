@@ -1,0 +1,6 @@
+SPLUNK_URL: https://download.splunk.com/products/splunk/releases/9.0.1/linux/splunk-9.0.1-82c987350fde-Linux-x86_64.tgz
+SPLUNK_PACKAGE: splunk-9.0.1-82c987350fde-Linux-x86_64.tgz
+SPLUNK_ACCOUNT_NAME: splunk-dev
+SPLUNK_ACCOUNT_UID: 2000
+SPLUNK_GROUP_NAME: splunk-dev
+SPLUNK_GROUP_GID: 2000
