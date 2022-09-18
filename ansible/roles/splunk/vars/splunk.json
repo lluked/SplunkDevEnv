@@ -1,0 +1,19 @@
+{
+    "SPLUNK": {
+        "url": "https://download.splunk.com/products/splunk/releases/9.0.1/linux/splunk-9.0.1-82c987350fde-Linux-x86_64.tgz",
+        "version": "9.0.1",
+        "src": "splunk-9.0.1-82c987350fde-Linux-x86_64.tgz"
+    },
+    "SPLUNK_APPS": {
+        "Eventgen": {
+            "splunkbase": "https://splunkbase.splunk.com/app/1924/",
+            "version": "7.2.1",
+            "src": "apps/eventgen_721.tgz"
+        },
+        "SecurityEssentials": {
+            "splunkbase": "https://splunkbase.splunk.com/app/3435/",
+            "version": "3.6.0",
+            "src": "apps/splunk-security-essentials_360.tgz"
+        }
+    }
+}
