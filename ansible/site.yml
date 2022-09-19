@@ -2,11 +2,12 @@
 
 - hosts: ['localhost','all']
   vars:
-    ansible_python_interpreter: /usr/bin/python2
+    ansible_python_interpreter: /usr/bin/python3
 
   pre_tasks:
-    - include: playbooks/main.yml
+    - include_tasks: playbooks/main.yml
 
   roles:
     - role: ansible_facts
-    - role: splunk
+    - role: splunk_common
+    - role: splunk_install
