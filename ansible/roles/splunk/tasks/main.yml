@@ -10,7 +10,8 @@
     msg: "{{ debug_item }}"
   with_items:
     - "{{ splunk.SPLUNK }}"
-    - "{{ splunk.SPLUNK_APPS }}"
+    - "{{ splunk.SPLUNK_APPS|dict2items }}"
+    - "{{ splunk.REPO_APPS|dict2items }}"
   loop_control:
     loop_var: debug_item
 
