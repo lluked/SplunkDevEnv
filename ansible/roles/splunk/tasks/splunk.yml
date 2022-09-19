@@ -83,6 +83,15 @@
   with_items:
     - "{{ splunk.REPO_APPS|dict2items }}"
 
+- name: Install custom apps
+  become: true
+  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
+  ansible.builtin.copy:
+    src: "{{ item.value.src }}"
+    dest: "/opt/splunk/etc/apps/"
+  with_items:
+    - "{{ splunk.CUSTOM_APPS|dict2items }}"
+
 - name: Start splunk
   become: true
   become_user: "{{ SPLUNK_ACCOUNT_NAME }}"

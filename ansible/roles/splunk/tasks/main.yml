@@ -12,6 +12,7 @@
     - "{{ splunk.SPLUNK }}"
     - "{{ splunk.SPLUNK_APPS|dict2items }}"
     - "{{ splunk.REPO_APPS|dict2items }}"
+    - "{{ splunk.CUSTOM_APPS|dict2items }}"
   loop_control:
     loop_var: debug_item
 
