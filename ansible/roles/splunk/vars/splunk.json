@@ -84,6 +84,16 @@
             "splunkbase": "https://splunkbase.splunk.com/app/3129/",
             "version": "1.5.0",
             "src": "apps/splunkbase/punchcard-custom-visualization_150.tgz"
+        },
+        "Splunk_TA_windows": {
+            "splunkbase": "https://splunkbase.splunk.com/app/742/",
+            "version": "8.5.0",
+            "src": "apps/splunkbase/splunk-add-on-for-microsoft-windows_850.tgz"
+        },
+        "Splunk_TA_microsoft_sysmon": {
+            "splunkbase": "https://splunkbase.splunk.com/app/5709/",
+            "version": "3.0.0",
+            "src": "apps/splunkbase/splunk-add-on-for-sysmon_300.tgz"
         }
     },
     "REPO_APPS": {
