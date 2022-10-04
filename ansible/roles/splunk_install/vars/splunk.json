@@ -85,6 +85,11 @@
             "version": "1.5.0",
             "src": "apps/splunkbase/punchcard-custom-visualization_150.tgz"
         },
+        "ip_extrainfo": {
+            "splunkbase": "https://splunkbase.splunk.com/app/5064",
+            "version": "1.1.2",
+            "src": "apps/splunkbase/ip-extrainfo-for-splunk_112.tgz"
+        },
         "Splunk_TA_windows": {
             "splunkbase": "https://splunkbase.splunk.com/app/742/",
             "version": "8.5.0",
