@@ -1,0 +1,94 @@
+---
+
+- name: Add docker-ce repository
+  become: true
+  shell: yum-config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+  args:
+    creates: /etc/yum.repos.d/docker-ce.repo
+
+- name: Install docker
+  become: true
+  ansible.builtin.yum:
+    name: ['docker-ce', 'docker-ce-cli', 'containerd.io', 'docker-compose-plugin']
+    state: present
+
+- name: Start docker daemon
+  become: true
+  ansible.builtin.systemd:
+    state: started
+    daemon_reload: yes
+    name: docker
+
+- name: Add splunk user to "docker" group
+  become: true
+  ansible.builtin.user:
+    name: "{{ SPLUNK_ACCOUNT_NAME }}"
+    groups: ["docker"]
+    append: yes
+
+- name: Install python packages for community.docker.docker_compose
+  become: true
+  ansible.builtin.pip:
+    name:
+      - requests
+      - docker
+      - docker-compose
+
+- name: Remove services
+  become: true
+  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
+  community.docker.docker_compose:
+    project_src: "/home/{{ SPLUNK_ACCOUNT_NAME }}/splunkDocker"
+    state: absent
+  ignore_errors: true
+
+- name: Remove splunkDocker folder
+  become: true
+  ansible.builtin.file:
+    path: "/home/{{ SPLUNK_ACCOUNT_NAME }}/splunkDocker"
+    state: absent
+
+- name: Copy splunkDocker folder
+  become: true
+  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
+  ansible.builtin.copy:
+    src: splunkDocker
+    dest: ~/
+
+- name: Create and start services
+  become: true
+  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
+  community.docker.docker_compose:
+    project_src: ~/splunkDocker
+
+- name: Stop services
+  become: true
+  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
+  community.docker.docker_compose:
+    project_src: ~/splunkDocker
+    stopped: true
+  register: output
+
+- name: Set facts
+  ansible.builtin.set_fact:
+    SPLUNK_APPS_DIR: "/home/{{ SPLUNK_ACCOUNT_NAME }}/splunkDocker/apps"
+    SPLUNK_RESOURCES_DIR: ../SplunkResources
+
+- name: Install apps to SPLUNK_APPS_DIR
+  ansible.builtin.import_role:
+    name: splunk_apps
+
+- name: Recursively change ownership of apps
+  become: true
+  ansible.builtin.file:
+    path: "/home/{{ SPLUNK_ACCOUNT_NAME }}/splunkDocker/apps"
+    state: directory
+    recurse: yes
+    owner: "{{ SPLUNK_ACCOUNT_NAME }}"
+    group: "{{ SPLUNK_GROUP_NAME }}"
+
+- name: Start services
+  become: true
+  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
+  community.docker.docker_compose:
+    project_src: ~/splunkDocker
