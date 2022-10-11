@@ -10,4 +10,4 @@
   roles:
     - role: ansible_facts
     - role: splunk_common
-    - role: splunk_install
+    - role: splunk_local

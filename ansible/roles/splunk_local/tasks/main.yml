@@ -1,24 +1,26 @@
 ---
 
-- name: Ensure splunk group exists with correct gid
+- name: Stop splunk
   become: true
-  ansible.builtin.group:
-    name: "{{ SPLUNK_GROUP_NAME }}"
-    gid: "{{ SPLUNK_GROUP_GID }}"
-    state: present
+  ansible.builtin.command:
+    cmd: /opt/splunk/bin/splunk stop
+    removes: /opt/splunk/bin/splunk
 
-- name: Add the splunk user to the splunk group
+- name: Remove splunk
   become: true
-  ansible.builtin.user:
-    name: "{{ SPLUNK_ACCOUNT_NAME }}"
-    comment: Splunk Developer
-    uid: "{{ SPLUNK_ACCOUNT_UID }}"
-    group: "{{ SPLUNK_GROUP_NAME }}"
+  ansible.builtin.file:
+    path: "{{ remove_item }}"
+    state: absent
+  with_items:
+    - /etc/init.d/splunk
+    - /opt/splunk
+  loop_control:
+    loop_var: remove_item
 
 - name: Extract splunk
   become: true
   ansible.builtin.unarchive:
-    src: "{{ splunk.SPLUNK.src }}"
+    src: "../SplunkResources/{{ splunk.SPLUNK.src }}"
     dest: /opt
     creates: /opt/splunk
 
@@ -62,35 +64,27 @@
   ansible.builtin.command: "{{ item }}"
   with_items:
       - "firewall-cmd --zone=public --permanent --add-port=8000/tcp"
+      - "firewall-cmd --zone=public --permanent --add-port=8089/tcp"
       - "firewall-cmd --reload"
   when: ansible_facts['os_family']|lower == 'redhat'
 
-- name: Install splunk apps
-  become: true
-  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
-  ansible.builtin.unarchive:
-    src: "{{ item.value.src }}"
-    dest: /opt/splunk/etc/apps/
-  with_items:
-    - "{{ splunk.SPLUNK_APPS|dict2items }}"
+- name: Set facts
+  ansible.builtin.set_fact:
+    SPLUNK_RESOURCES_DIR: ../SplunkResources
+    SPLUNK_APPS_DIR: /opt/splunk/etc/apps
 
-- name: Install repo apps
-  become: true
-  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
-  ansible.builtin.git:
-    repo: "{{ item.value.repo }}"
-    dest: "/opt/splunk/etc/apps/{{ item.key }}"
-  with_items:
-    - "{{ splunk.REPO_APPS|dict2items }}"
+- name: Install apps
+  ansible.builtin.import_role:
+    name: splunk_apps
 
-- name: Install custom apps
+- name: Recursively change ownership of /opt/splunk
   become: true
-  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
-  ansible.builtin.copy:
-    src: "{{ item.value.src }}"
-    dest: "/opt/splunk/etc/apps/"
-  with_items:
-    - "{{ splunk.CUSTOM_APPS|dict2items }}"
+  ansible.builtin.file:
+    path: /opt/splunk
+    state: directory
+    recurse: yes
+    owner: "{{ SPLUNK_ACCOUNT_NAME }}"
+    group: "{{ SPLUNK_GROUP_NAME }}"
 
 - name: Start splunk
   become: true

@@ -1,0 +1,25 @@
+---
+
+- name: Install splunk apps
+  become: true
+  ansible.builtin.unarchive:
+    src: "{{ SPLUNK_RESOURCES_DIR }}/{{ item.value.src }}"
+    dest: "{{ SPLUNK_APPS_DIR }}"
+  with_items:
+    - "{{ splunk.SPLUNK_APPS|dict2items }}"
+
+- name: Install repo apps
+  become: true
+  ansible.builtin.git:
+    repo: "{{ item.value.repo }}"
+    dest: "{{ SPLUNK_APPS_DIR }}/{{ item.key }}"
+  with_items:
+    - "{{ splunk.REPO_APPS|dict2items }}"
+
+- name: Install custom apps
+  become: true
+  ansible.builtin.copy:
+    src: "{{ SPLUNK_RESOURCES_DIR }}/{{ item.value.src }}"
+    dest: "{{ SPLUNK_APPS_DIR }}"
+  with_items:
+    - "{{ splunk.CUSTOM_APPS|dict2items }}"
