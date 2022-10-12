@@ -1,19 +1,19 @@
 ---
 
 - name: Update apt-cache
-  become: yes
+  become: true
   ansible.builtin.apt:
     update_cache: yes
 
 - name: Upgrade all packages to their latest version
-  become: yes
+  become: true
   ansible.builtin.apt:
     name: "*"
     state: latest
 
 - name: Install required packages
-  become: yes
+  become: true
   ansible.builtin.apt:
-    name: ['ca-certificates', 'gnupg2']
+    name: ['ca-certificates', 'gnupg2', 'acl', 'python3-pip']
     state: present
     update_cache: yes
