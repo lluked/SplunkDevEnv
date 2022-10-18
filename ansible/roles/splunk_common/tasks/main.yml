@@ -30,3 +30,4 @@
     comment: Splunk Developer
     uid: "{{ SPLUNK_ACCOUNT_UID }}"
     group: "{{ SPLUNK_GROUP_NAME }}"
+    shell: /bin/bash
