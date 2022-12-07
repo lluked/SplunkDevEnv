@@ -1,0 +1,30 @@
+---
+
+- name: Install splunk apps
+  become: true
+  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
+  ansible.builtin.unarchive:
+    src: "/SplunkResources/{{ item.value.src }}"
+    dest: "/opt/splunk/etc/apps"
+    remote_src: yes
+  with_items:
+    - "{{ splunk.SPLUNK_APPS|dict2items }}"
+
+- name: Install repo apps
+  become: true
+  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
+  ansible.builtin.git:
+    repo: "{{ item.value.repo }}"
+    dest: "/opt/splunk/etc/apps/{{ item.key }}"
+  with_items:
+    - "{{ splunk.REPO_APPS|dict2items }}"
+
+- name: Install custom apps
+  become: true
+  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
+  ansible.builtin.copy:
+    src: "/SplunkResources/{{ item.value.src }}"
+    dest: "/opt/splunk/etc/apps"
+    remote_src: yes
+  with_items:
+    - "{{ splunk.CUSTOM_APPS|dict2items }}"

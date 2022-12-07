@@ -1,0 +1,66 @@
+---
+
+- name: Create SplunkResources directory
+  become: true
+  ansible.builtin.file:
+    path: /SplunkResources
+    state: directory
+    mode: '0777'
+
+- name: Copy SplunkResources
+  ansible.builtin.copy:
+    src: ../SplunkResources
+    dest: /
+
+- name: Include splunk variables
+  ansible.builtin.include_vars:
+    file: ../SplunkResources/splunk.json
+    name: splunk
+
+- name: Debug
+  ansible.builtin.debug:
+    msg: "{{ debug_item }}"
+  with_items:
+    - "{{ splunk.SPLUNK }}"
+    - "{{ splunk.SPLUNK_APPS|dict2items }}"
+    - "{{ splunk.REPO_APPS|dict2items }}"
+    - "{{ splunk.CUSTOM_APPS|dict2items }}"
+  loop_control:
+    loop_var: debug_item
+
+- name: Ensure splunk group exists with correct gid
+  become: true
+  ansible.builtin.group:
+    name: "{{ SPLUNK_GROUP_NAME }}"
+    gid: "{{ SPLUNK_GROUP_GID }}"
+    state: present
+
+- name: Add the splunk user to the splunk group
+  become: true
+  ansible.builtin.user:
+    name: "{{ SPLUNK_ACCOUNT_NAME }}"
+    comment: Splunk Developer
+    uid: "{{ SPLUNK_ACCOUNT_UID }}"
+    group: "{{ SPLUNK_GROUP_NAME }}"
+    shell: /bin/bash
+
+- name: Install splunk
+  ansible.builtin.import_tasks: splunk_install.yml
+
+- name: Install splunk apps
+  ansible.builtin.import_tasks: splunk_apps.yml
+
+- name: Open firewall (redhat)
+  become: true
+  ansible.builtin.command: "{{ item }}"
+  with_items:
+      - "firewall-cmd --zone=public --permanent --add-port=8000/tcp"
+      - "firewall-cmd --zone=public --permanent --add-port=8089/tcp"
+      - "firewall-cmd --reload"
+  when: ansible_facts['os_family']|lower == 'redhat'
+
+- name: Remove SplunkResources directory
+  become: true
+  ansible.builtin.file:
+    path: /SplunkResources
+    state: absent

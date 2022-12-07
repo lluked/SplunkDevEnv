@@ -1,13 +1,13 @@
 ---
 
-- name: Upgrade all packages to their latest version
+- name: Update all packages to their latest version
   become: true
-  ansible.builtin.yum:
+  ansible.builtin.dnf:
     name: '*'
     state: latest
 
 - name: Install required packages
   become: true
-  ansible.builtin.yum:
+  ansible.builtin.dnf:
     name: ['yum-utils', 'unzip']
     state: present

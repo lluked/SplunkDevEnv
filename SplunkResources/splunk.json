@@ -113,8 +113,20 @@
     }
   },
   "CUSTOM_APPS": {
-    "indexes-sse": {
-      "src": "apps/custom/indexes-sse"
+    "indexes-ep": {
+      "src": "apps/custom/indexes-ep"
+    },
+    "indexes-net": {
+      "src": "apps/custom/indexes-net"
+    },
+    "indexes-osnix": {
+      "src": "apps/custom/indexes-osnix"
+    },
+    "indexes-oswin": {
+      "src": "apps/custom/indexes-oswin"
+    },
+    "indexes-other": {
+      "src": "apps/custom/indexes-other"
     }
   }
 }

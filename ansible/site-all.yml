@@ -1,0 +1,14 @@
+---
+
+# For Vagrant, Packer
+- hosts: all
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  pre_tasks:
+    - include_tasks: playbooks/main.yml
+
+  roles:
+    - role: ansible_facts
+    - role: splunk
+    - role: sc4s

@@ -1,0 +1,58 @@
+---
+
+- name: Stop splunk
+  become: true
+  ansible.builtin.command:
+    cmd: /opt/splunk/bin/splunk stop
+    removes: /opt/splunk/bin/splunk
+
+- name: Remove splunk
+  become: true
+  ansible.builtin.file:
+    path: "{{ remove_item }}"
+    state: absent
+  with_items:
+    - /etc/init.d/splunk
+    - /opt/splunk
+  loop_control:
+    loop_var: remove_item
+
+- name: Extract splunk
+  become: true
+  ansible.builtin.unarchive:
+    src: "/SplunkResources/{{ splunk.SPLUNK.src }}"
+    dest: /opt
+    creates: /opt/splunk
+    remote_src: yes
+
+- name: Copy user-seed.conf
+  become: true
+  ansible.builtin.copy:
+    src: user-seed.conf
+    dest: /opt/splunk/etc/system/local/user-seed.conf
+
+- name: Recursively change ownership of /opt/splunk
+  become: true
+  ansible.builtin.file:
+    path: /opt/splunk
+    state: directory
+    recurse: yes
+    owner: "{{ SPLUNK_ACCOUNT_NAME }}"
+    group: "{{ SPLUNK_GROUP_NAME }}"
+
+- name: Start splunk for the first time
+  become: true
+  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
+  ansible.builtin.command:
+    cmd: /opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt
+
+- name: Stop splunk after the first start
+  become: true
+  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
+  ansible.builtin.command:
+    cmd: /opt/splunk/bin/splunk stop
+
+- name: Enable boot-start
+  become: true
+  ansible.builtin.command:
+    cmd: /opt/splunk/bin/splunk enable boot-start -user {{ SPLUNK_ACCOUNT_NAME }} -systemd-managed 1

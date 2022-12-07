@@ -1,0 +1,75 @@
+---
+
+- name: Splunk config
+  ansible.builtin.import_tasks: splunk-conf.yml
+
+# https://splunk.github.io/splunk-connect-for-syslog/main/gettingstarted/quickstart_guide/
+
+- name: Set the host OS kernel to match the default receive buffer of sc4s which is set to 16MB
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/sysctl.conf
+    search_string: "{{ item.search_string }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - { search_string: net.core.rmem_default, line: net.core.rmem_default = 17039360 }
+    - { search_string: net.core.rmem_max, line: net.core.rmem_max = 17039360 }
+  register: sysctl
+
+- name: Apply to the kernel
+  become: true
+  ansible.builtin.command:
+    cmd: sysctl -p
+  when: sysctl.changed
+
+- name: Install podman
+  become: true
+  ansible.builtin.dnf:
+    name: ['podman']
+    state: present
+
+- name: Create a podman local volume that will contain the disk buffer files and other SC4S state files
+  become: true
+  containers.podman.podman_volume:
+      state: present
+      name: splunk-sc4s-var
+
+- name: Create directories used as a mount point for local overrides and configurations
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /opt/sc4s/local
+    - /opt/sc4s/archive
+    - /opt/sc4s/tls
+
+- name: Template the environment file
+  become: true
+  ansible.builtin.template:
+    src: env_file.j2
+    dest: /opt/sc4s/env_file
+
+- name: Copy the systemd unit file
+  become: true
+  ansible.builtin.copy:
+    src: sc4s.service
+    dest: /lib/systemd/system/sc4s.service
+    mode: '0644'
+
+- name: Configure SC4S for systemd and start SC4S
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    name: sc4s
+    enabled: yes
+    state: started
+
+- name: Open firewall (redhat)
+  become: true
+  ansible.builtin.command: "{{ item }}"
+  with_items:
+    - "firewall-cmd --zone=public --permanent --add-port=514/udp"
+    - "firewall-cmd --zone=public --permanent --add-port=6514/tcp"
+    - "firewall-cmd --reload"

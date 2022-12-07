@@ -1,0 +1,35 @@
+---
+
+- name: Ensure local splunk_httpinput directory exists
+  become: true
+  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
+  ansible.builtin.file:
+    path: /opt/splunk/etc/apps/splunk_httpinput/local
+    state: directory
+    mode: '0755'
+
+- name: Copy splunk_httpinput local inputs.conf
+  become: true
+  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
+  ansible.builtin.copy:
+    src: splunk_httpinput_local_inputs.conf
+    dest: /opt/splunk/etc/apps/splunk_httpinput/local/inputs.conf
+    mode: '0600'
+
+- name: Create sc4s app directories
+  become: true
+  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+   - "/opt/splunk/etc/apps/sc4s"
+   - "/opt/splunk/etc/apps/sc4s/default"
+
+- name: Template inputs.conf
+  become: true
+  become_user: "{{ SPLUNK_ACCOUNT_NAME }}"
+  ansible.builtin.template:
+    src: inputs.conf.j2
+    dest: "/opt/splunk/etc/apps/sc4s/default/inputs.conf"
